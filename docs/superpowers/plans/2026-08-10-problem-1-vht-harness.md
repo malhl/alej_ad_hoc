@@ -129,6 +129,11 @@ status <- system2("pdftotext", args = c("-layout", pdf_path, txt_path))
 stopifnot(status == 0, file.exists(txt_path))
 
 lines <- readLines(txt_path, warn = FALSE)
+# pdftotext inserts a form-feed (0x0C) page-break marker as the first
+# character of the first line of each new page; strip it so line-start
+# anchors like "^Table A\\.2\\." match table-title lines that happen to
+# start a page (this affects both this task and the anchors Task 3 adds).
+lines <- gsub("\f", "", lines, fixed = TRUE)
 stopifnot(
   any(grepl("^Table A\\.2\\. Normalized Compositions", lines)),
   any(grepl("^Table A\\.3\\. Properties of LAW Glasses", lines))
