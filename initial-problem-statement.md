@@ -24,6 +24,8 @@ Actual numeric values will be provided.
 
 Assuming it is possible to solve the problem in the prologue, can the LLM access "Glass Property-Composition Models for Support of Hanford WTP LAW Facility Operation" by Vienna et al. (2020) (available only on the web) and create:
 
+Reference document: https://www.osti.gov/servlets/purl/1986346
+
 1. A predictive model relating VHT to the composition of the glass using all glass components. The model may include significant interactions among glass components.
    - The model does not have to be linear, but it does have to include all glass components.
 2. Can the LLM provide an equation as output?
