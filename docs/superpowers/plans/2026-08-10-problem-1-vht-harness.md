@@ -275,10 +275,15 @@ git commit -m "Parse composition and VHT tables into glass_data.csv"
 - Create (temporary, for Step 1 only, then delete): `problem-1-vht-model/data/test_fixtures/bad_composition.csv`
 
 **Interfaces:**
-- Consumes: `problem-1-vht-model/data/glass_data.csv` (from Task 3), same 23-column schema
-  as documented in Task 3's Interfaces.
-- Produces: `problem-1-vht-model/data/glass_data_clean.csv` (identical schema) — consumed by
-  Task 5.
+- Consumes: `problem-1-vht-model/data/glass_data.csv` (from Task 3), same 24-column schema
+  as documented in Task 3's Interfaces. `ra_gm2d` is legitimately `NA` for ~129 of the 701
+  rows (a glass can have a recorded pass/fail result with no numeric alteration rate, per
+  the source table's "Blank cells represent no data" caption — this is real, expected data,
+  not a parsing defect) — `pass_fail` itself is never `NA`.
+- Produces: `problem-1-vht-model/data/glass_data_clean.csv` (identical schema, same NA
+  pattern in `ra_gm2d` preserved) — consumed by Task 5, which filters to non-NA `ra_gm2d`
+  rows for the continuous model; Task 6's logistic model uses the full set since it only
+  needs `pass_fail`.
 
 - [ ] **Step 1: Write a bad-data fixture and the failing-case check**
 
@@ -310,12 +315,15 @@ if (length(bad_sum) > 0) {
                paste(glass$glass_num[bad_sum], collapse = ", ")))
 }
 
-check_cols <- c(oxide_cols, "ra_gm2d", "pass_fail")
+check_cols <- c(oxide_cols, "pass_fail")
 if (anyNA(glass[check_cols])) {
-  stop("Missing values found in composition or VHT columns")
+  stop("Missing values found in composition or pass_fail columns")
 }
+cat(sprintf("%d of %d rows have NA ra_gm2d (pass/fail recorded, rate not) — expected, kept\n",
+            sum(is.na(glass$ra_gm2d)), nrow(glass)))
 
-out_of_range <- glass$ra_gm2d < 0.1 | glass$ra_gm2d > 1529.1
+has_rate <- !is.na(glass$ra_gm2d)
+out_of_range <- has_rate & (glass$ra_gm2d < 0.1 | glass$ra_gm2d > 1529.1)
 if (any(out_of_range)) {
   stop(sprintf("ra_gm2d outside plausible range [0.1, 1529.1] for glass_num %s",
                paste(glass$glass_num[out_of_range], collapse = ", ")))
@@ -385,10 +393,18 @@ oxide_cols <- c("Al2O3","B2O3","CaO","Cl","Cr2O3","F","Fe2O3","K2O","Li2O",
                  "ZrO2","Others")
 
 glass <- read.csv("data/glass_data_clean.csv", stringsAsFactors = FALSE)
-glass$log_ra <- log(glass$ra_gm2d)
+# ~129 of 701 rows have a recorded pass/fail result but no numeric VHT rate
+# (real data, not a defect — see Task 4's Interfaces note). The continuous
+# model needs a numeric response, so it fits on the subset that has one, kept
+# as a separate `glass_fit` frame — `glass` itself stays the full 701 rows
+# for Task 6's logistic model (appended below), which only needs pass_fail.
+glass_fit <- glass[!is.na(glass$ra_gm2d), ]
+glass_fit$log_ra <- log(glass_fit$ra_gm2d)
+cat(sprintf("Fitting continuous model on %d of %d rows (have a recorded ra_gm2d)\n",
+            nrow(glass_fit), nrow(glass)))
 
 linear_formula <- as.formula(paste("log_ra ~", paste(oxide_cols, collapse = " + "), "- 1"))
-fit_linear <- lm(linear_formula, data = glass)
+fit_linear <- lm(linear_formula, data = glass_fit)
 
 pair_terms <- combn(oxide_cols, 2, function(p) paste(p, collapse = ":"))
 scope_formula <- as.formula(paste("~ . +", paste(pair_terms, collapse = " + ")))
@@ -399,7 +415,7 @@ cat(sprintf("Significant interaction terms (p < 0.05): %s\n",
 
 final_formula <- as.formula(paste("log_ra ~",
                                    paste(c(oxide_cols, sig_terms), collapse = " + "), "- 1"))
-fit_continuous <- lm(final_formula, data = glass)
+fit_continuous <- lm(final_formula, data = glass_fit)
 
 r2 <- summary(fit_continuous)$r.squared
 rmse <- sqrt(mean(residuals(fit_continuous)^2))
@@ -510,16 +526,27 @@ LOO-CV for an OLS fit is computed via the standard leverage-based shortcut
 # problem-1-vht-model/scripts/03_validate_models.R
 fit_continuous <- readRDS("models/continuous_model.rds")
 glass <- read.csv("data/glass_data_clean.csv", stringsAsFactors = FALSE)
-glass$log_ra <- log(glass$ra_gm2d)
+
+# LOO-CV must be computed against the exact rows the model was fit on
+# (Task 5 dropped the ~129 rows with no recorded ra_gm2d before fitting) so
+# hatvalues()/residuals() line up 1:1 with the response used in the sum of
+# squares below.
+glass_fit <- glass[!is.na(glass$ra_gm2d), ]
+glass_fit$log_ra <- log(glass_fit$ra_gm2d)
 
 h <- hatvalues(fit_continuous)
 loo_resid <- residuals(fit_continuous) / (1 - h)
 loo_rmse <- sqrt(mean(loo_resid^2))
-loo_r2 <- 1 - sum(loo_resid^2) / sum((glass$log_ra - mean(glass$log_ra))^2)
+loo_r2 <- 1 - sum(loo_resid^2) / sum((glass_fit$log_ra - mean(glass_fit$log_ra))^2)
 
-cat(sprintf("LOO-CV: R2 = %.4f, RMSE (log scale) = %.4f\n", loo_r2, loo_rmse))
+cat(sprintf("LOO-CV: R2 = %.4f, RMSE (log scale) = %.4f (on %d rows with a recorded rate)\n",
+            loo_r2, loo_rmse, nrow(glass_fit)))
 stopifnot(loo_rmse > 0)
 
+# Intervals use the full 701-row set (not just glass_fit): predict() only
+# needs the oxide predictor columns, which are never NA, so this also
+# yields model-based rate predictions for the ~129 glasses with a pass/fail
+# result but no measured rate.
 ci <- predict(fit_continuous, newdata = glass, interval = "confidence")
 pi <- predict(fit_continuous, newdata = glass, interval = "prediction")
 intervals <- data.frame(
