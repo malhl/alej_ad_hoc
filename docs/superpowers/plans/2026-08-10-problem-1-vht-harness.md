@@ -128,7 +128,10 @@ stopifnot(file.exists(pdf_path))
 status <- system2("pdftotext", args = c("-layout", pdf_path, txt_path))
 stopifnot(status == 0, file.exists(txt_path))
 
-lines <- readLines(txt_path, warn = FALSE)
+# pdftotext emits ISO-8859 (not UTF-8) bytes for this PDF — confirmed via
+# `file data/raw/vienna2020.txt` reporting "ISO-8859 text" — so read as
+# latin1 to avoid corrupting/erroring on those bytes.
+lines <- readLines(txt_path, warn = FALSE, encoding = "latin1")
 # pdftotext inserts a form-feed (0x0C) page-break marker as the first
 # character of the first line of each new page; strip it so line-start
 # anchors like "^Table A\\.2\\." match table-title lines that happen to
@@ -141,7 +144,7 @@ stopifnot(
 cat(sprintf("Extracted %d lines to %s\n", length(lines), txt_path))
 ```
 
-- [ ] **Step 2: Run it and verify**
+- [x] **Step 2: Run it and verify**
 
 Run: `cd problem-1-vht-model && Rscript scripts/00_extract_data.R`
 
@@ -149,7 +152,7 @@ Expected: downloads the ~10MB PDF (first run only), then prints
 `Extracted <N> lines to data/raw/vienna2020.txt` with N in the tens of thousands. Re-run it —
 expected: skips the download (file already exists) and re-extracts text, same message.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add problem-1-vht-model/scripts/00_extract_data.R
