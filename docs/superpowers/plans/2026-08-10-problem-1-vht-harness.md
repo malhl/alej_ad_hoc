@@ -48,7 +48,7 @@ CLI for rendering `report.qmd`.
 **Interfaces:**
 - Produces: the directory layout every later task writes into.
 
-- [ ] **Step 1: Verify required tooling is on PATH**
+- [x] **Step 1: Verify required tooling is on PATH**
 
 Run:
 ```
@@ -62,7 +62,7 @@ before continuing (R: https://cran.r-project.org/bin/windows/base/ , or
 `winget install --id RProject.R -e`; Quarto: https://quarto.org/docs/get-started/ , or
 `winget install --id Posit.Quarto -e`). Re-open the shell afterward so PATH updates apply.
 
-- [ ] **Step 2: Install the R packages Quarto's R engine needs**
+- [x] **Step 2: Install the R packages Quarto's R engine needs**
 
 Run:
 ```
@@ -71,7 +71,7 @@ Rscript -e "install.packages(c('knitr', 'rmarkdown'), repos = 'https://cloud.r-p
 Expected: both packages install without error. Verify with
 `Rscript -e "library(knitr); library(rmarkdown); cat('OK\n')"` → prints `OK`.
 
-- [ ] **Step 3: Create the directory structure**
+- [x] **Step 3: Create the directory structure**
 
 ```bash
 mkdir -p problem-1-vht-model/data/raw
@@ -82,14 +82,14 @@ touch problem-1-vht-model/scripts/.gitkeep
 touch problem-1-vht-model/models/.gitkeep
 ```
 
-- [ ] **Step 4: Create `problem-1-vht-model/.gitignore`**
+- [x] **Step 4: Create `problem-1-vht-model/.gitignore`**
 
 ```
 data/raw/*.pdf
 data/raw/*.txt
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `git status` — expect the new directories/files as untracked.
 
