@@ -12,6 +12,9 @@ stopifnot(file.exists(pdf_path))
 status <- system2("pdftotext", args = c("-layout", pdf_path, txt_path))
 stopifnot(status == 0, file.exists(txt_path))
 
+# pdftotext emits ISO-8859 (not UTF-8) bytes for this PDF — confirmed via
+# `file data/raw/vienna2020.txt` reporting "ISO-8859 text" — so read as
+# latin1 to avoid corrupting/erroring on those bytes.
 lines <- readLines(txt_path, warn = FALSE, encoding = "latin1")
 lines <- gsub("\f", "", lines, fixed = TRUE)
 stopifnot(
