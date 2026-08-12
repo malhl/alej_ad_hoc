@@ -285,7 +285,7 @@ git commit -m "Parse composition and VHT tables into glass_data.csv"
   rows for the continuous model; Task 6's logistic model uses the full set since it only
   needs `pass_fail`.
 
-- [ ] **Step 1: Write a bad-data fixture and the failing-case check**
+- [x] **Step 1: Write a bad-data fixture and the failing-case check**
 
 Create `problem-1-vht-model/data/test_fixtures/bad_composition.csv` with this exact content
 (header plus one row whose oxide columns sum to 0.5, not 1.0):
@@ -295,7 +295,7 @@ glass_num,glass_id,Al2O3,B2O3,CaO,Cl,Cr2O3,F,Fe2O3,K2O,Li2O,MgO,Na2O,P2O5,SO3,Si
 1,TESTGLASS,0.05,0.1,0.05,0,0,0,0.05,0,0.05,0.05,0.15,0,0,0,0,0,0,0,0,0,10,P
 ```
 
-- [ ] **Step 2: Write `01_clean_data.R`**
+- [x] **Step 2: Write `01_clean_data.R`**
 
 ```r
 # problem-1-vht-model/scripts/01_clean_data.R
@@ -342,13 +342,13 @@ write.csv(glass, "data/glass_data_clean.csv", row.names = FALSE)
 cat(sprintf("Validated %d rows; wrote data/glass_data_clean.csv\n", nrow(glass)))
 ```
 
-- [ ] **Step 3: Run against the bad fixture and verify it fails**
+- [x] **Step 3: Run against the bad fixture and verify it fails**
 
 Run: `cd problem-1-vht-model && Rscript scripts/01_clean_data.R data/test_fixtures/bad_composition.csv`
 
 Expected: FAILS with `Error: Composition does not sum to ~1 for glass_num 1`.
 
-- [ ] **Step 4: Run against the real data and verify it passes**
+- [x] **Step 4: Run against the real data and verify it passes**
 
 Run: `cd problem-1-vht-model && Rscript scripts/01_clean_data.R`
 
@@ -357,7 +357,7 @@ and 720. If it fails instead, the error message names the offending `glass_num`(
 specific check that tripped — go inspect those rows in `data/glass_data.csv` and fix the
 Task 3 parsing regexes rather than patching around them here.
 
-- [ ] **Step 5: Remove the fixture and commit**
+- [x] **Step 5: Remove the fixture and commit**
 
 ```bash
 rm -rf problem-1-vht-model/data/test_fixtures
