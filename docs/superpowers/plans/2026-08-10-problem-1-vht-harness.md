@@ -181,7 +181,7 @@ trailing blank columns are dropped by `pdftotext`, but these two are never trail
 without VHT data, or that are page-header/footer artifacts, naturally fail the "must be
 exactly 20 numeric values" / "6th token must parse as numeric" checks and are dropped.
 
-- [ ] **Step 1: Append the parsing logic to `00_extract_data.R`**
+- [x] **Step 1: Append the parsing logic to `00_extract_data.R`**
 
 ```r
 oxide_cols <- c("Al2O3","B2O3","CaO","Cl","Cr2O3","F","Fe2O3","K2O","Li2O",
@@ -240,7 +240,7 @@ cat(sprintf("Joined glass_data.csv has %d rows\n", nrow(glass_data)))
 write.csv(glass_data, "data/glass_data.csv", row.names = FALSE)
 ```
 
-- [ ] **Step 2: Run it**
+- [x] **Step 2: Run it**
 
 Run: `cd problem-1-vht-model && Rscript scripts/00_extract_data.R`
 
@@ -250,7 +250,7 @@ trips, the printed diagnostic tells you which count is off — inspect
 `data/raw/vienna2020.txt` around the printed table boundaries and adjust the parsing
 regexes (most likely cause: a page-break artifact line that isn't being filtered out).
 
-- [ ] **Step 3: Spot-check the output**
+- [x] **Step 3: Spot-check the output**
 
 Run:
 ```
@@ -259,7 +259,7 @@ Rscript -e "d <- read.csv('problem-1-vht-model/data/glass_data.csv'); print(head
 Expected: sensible glass IDs (e.g. `LAWA49`, `LAWA50`), `SiO2`/`Na2O` values between 0 and 1,
 `ra_gm2d` values in [0.1, 1529.1], `pass_fail` values of `P` or `F`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add problem-1-vht-model/scripts/00_extract_data.R problem-1-vht-model/data/glass_data.csv
