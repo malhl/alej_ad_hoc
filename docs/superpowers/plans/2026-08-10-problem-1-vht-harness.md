@@ -292,7 +292,7 @@ Create `problem-1-vht-model/data/test_fixtures/bad_composition.csv` with this ex
 
 ```csv
 glass_num,glass_id,Al2O3,B2O3,CaO,Cl,Cr2O3,F,Fe2O3,K2O,Li2O,MgO,Na2O,P2O5,SO3,SiO2,SnO2,TiO2,V2O5,ZnO,ZrO2,Others,ra_gm2d,pass_fail
-1,TESTGLASS,0.05,0.1,0.05,0,0,0,0.05,0,0.05,0.05,0.15,0,0,0.5,0,0,0,0,0,0,10,P
+1,TESTGLASS,0.05,0.1,0.05,0,0,0,0.05,0,0.05,0.05,0.15,0,0,0,0,0,0,0,0,0,10,P
 ```
 
 - [ ] **Step 2: Write `01_clean_data.R`**
