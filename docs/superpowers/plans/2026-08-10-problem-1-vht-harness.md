@@ -634,7 +634,7 @@ and adds three nonlinear terms (TiO2×ZrO2, Li2O², Li2O×Na2O), with a logit li
 classification threshold of 0.19 (chosen to keep FNR under 10% while maximizing accuracy).
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add problem-1-vht-model/data/paper_benchmarks.md
