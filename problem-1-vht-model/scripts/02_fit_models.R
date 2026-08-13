@@ -29,3 +29,22 @@ stopifnot(r2 > 0, r2 < 1, rmse > 0, all(oxide_cols %in% names(coef(fit_continuou
 
 dir.create("models", showWarnings = FALSE)
 saveRDS(fit_continuous, "models/continuous_model.rds")
+
+glass$pass_fail_bin <- ifelse(glass$pass_fail == "F", 1, 0)
+logit_formula <- as.formula(paste("pass_fail_bin ~", paste(oxide_cols, collapse = " + "), "- 1"))
+fit_logistic <- glm(logit_formula, data = glass, family = binomial(link = "logit"))
+
+pred_prob <- predict(fit_logistic, type = "response")
+pred_class <- ifelse(pred_prob >= 0.5, 1, 0)
+accuracy <- mean(pred_class == glass$pass_fail_bin)
+fpr <- mean(pred_class[glass$pass_fail_bin == 0] == 1)
+fnr <- mean(pred_class[glass$pass_fail_bin == 1] == 0)
+
+cat(sprintf("Logistic model: accuracy = %.2f%%, FPR = %.2f%%, FNR = %.2f%%\n",
+            accuracy * 100, fpr * 100, fnr * 100))
+cat("Paper's 20-term FLM: accuracy = 86.30%, FPR = 13.26%, FNR = 15.19%\n")
+cat("Paper's 19-term PQM (recommended): accuracy = 79.74%, FPR = 24.24%, FNR = 6.96%\n")
+
+stopifnot(accuracy > 0, accuracy <= 1, fpr >= 0, fpr <= 1, fnr >= 0, fnr <= 1)
+
+saveRDS(fit_logistic, "models/logistic_model.rds")
