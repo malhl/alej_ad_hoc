@@ -464,7 +464,7 @@ git commit -m "Fit primary continuous mixture model for VHT alteration rate"
 - Produces: `problem-1-vht-model/models/logistic_model.rds` (a `glm` object) — consumed by
   Task 7 and `report.qmd`.
 
-- [ ] **Step 1: Append the logistic-model section to `02_fit_models.R`**
+- [x] **Step 1: Append the logistic-model section to `02_fit_models.R`**
 
 ```r
 glass$pass_fail_bin <- ifelse(glass$pass_fail == "F", 1, 0)
@@ -487,7 +487,7 @@ stopifnot(accuracy > 0, accuracy <= 1, fpr >= 0, fpr <= 1, fnr >= 0, fnr <= 1)
 saveRDS(fit_logistic, "models/logistic_model.rds")
 ```
 
-- [ ] **Step 2: Run the full script**
+- [x] **Step 2: Run the full script**
 
 Run: `cd problem-1-vht-model && Rscript scripts/02_fit_models.R`
 
