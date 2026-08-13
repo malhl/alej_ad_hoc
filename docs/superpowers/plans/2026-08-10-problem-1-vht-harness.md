@@ -594,7 +594,7 @@ git commit -m "Add LOO-CV and confidence/prediction interval validation"
 - Produces: `problem-1-vht-model/data/paper_benchmarks.md` — read (as prose reference, not
   parsed) by whoever writes `report.qmd` in Task 9.
 
-- [ ] **Step 1: Write the benchmarks file**
+- [x] **Step 1: Write the benchmarks file**
 
 ```markdown
 # Paper Benchmarks — Vienna et al. (2020), Section 9.2
