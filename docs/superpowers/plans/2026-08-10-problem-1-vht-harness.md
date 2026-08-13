@@ -110,7 +110,7 @@ git commit -m "Scaffold problem-1-vht-model project structure"
 - Produces: `problem-1-vht-model/data/raw/vienna2020.pdf`,
   `problem-1-vht-model/data/raw/vienna2020.txt` (consumed by Task 3).
 
-- [ ] **Step 1: Write the extraction script**
+- [x] **Step 1: Write the extraction script**
 
 ```r
 # problem-1-vht-model/scripts/00_extract_data.R
