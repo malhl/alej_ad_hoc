@@ -520,7 +520,7 @@ git commit -m "Fit secondary pass/fail logistic model benchmarked against paper"
 LOO-CV for an OLS fit is computed via the standard leverage-based shortcut
 (`e_loo_i = residual_i / (1 - h_ii)`) rather than literally refitting the model 686 times.
 
-- [ ] **Step 1: Write `03_validate_models.R`**
+- [x] **Step 1: Write `03_validate_models.R`**
 
 ```r
 # problem-1-vht-model/scripts/03_validate_models.R
@@ -565,7 +565,7 @@ saveRDS(list(loo_r2 = loo_r2, loo_rmse = loo_rmse, intervals = intervals),
 cat("Wrote models/continuous_model_validation.rds\n")
 ```
 
-- [ ] **Step 2: Run it**
+- [x] **Step 2: Run it**
 
 Run: `cd problem-1-vht-model && Rscript scripts/03_validate_models.R`
 
