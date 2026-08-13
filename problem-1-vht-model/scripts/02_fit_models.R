@@ -4,10 +4,19 @@ oxide_cols <- c("Al2O3","B2O3","CaO","Cl","Cr2O3","F","Fe2O3","K2O","Li2O",
                  "ZrO2","Others")
 
 glass <- read.csv("data/glass_data_clean.csv", stringsAsFactors = FALSE)
-glass$log_ra <- log(glass$ra_gm2d)
+
+# ~129 of 701 rows have a recorded pass/fail result but no numeric VHT rate
+# (real data, not a defect — see Task 4's Interfaces note). The continuous
+# model needs a numeric response, so it fits on the subset that has one, kept
+# as a separate `glass_fit` frame — `glass` itself stays the full 701 rows
+# for Task 6's logistic model (appended below), which only needs pass_fail.
+glass_fit <- glass[!is.na(glass$ra_gm2d), ]
+glass_fit$log_ra <- log(glass_fit$ra_gm2d)
+cat(sprintf("Fitting continuous model on %d of %d rows (have a recorded ra_gm2d)\n",
+            nrow(glass_fit), nrow(glass)))
 
 linear_formula <- as.formula(paste("log_ra ~", paste(oxide_cols, collapse = " + "), "- 1"))
-fit_linear <- lm(linear_formula, data = glass)
+fit_linear <- lm(linear_formula, data = glass_fit)
 
 pair_terms <- combn(oxide_cols, 2, function(p) paste(p, collapse = ":"))
 scope_formula <- as.formula(paste("~ . +", paste(pair_terms, collapse = " + ")))
@@ -18,7 +27,7 @@ cat(sprintf("Significant interaction terms (p < 0.05): %s\n",
 
 final_formula <- as.formula(paste("log_ra ~",
                                    paste(c(oxide_cols, sig_terms), collapse = " + "), "- 1"))
-fit_continuous <- lm(final_formula, data = glass)
+fit_continuous <- lm(final_formula, data = glass_fit)
 
 r2 <- summary(fit_continuous)$r.squared
 rmse <- sqrt(mean(residuals(fit_continuous)^2))
