@@ -384,7 +384,7 @@ screened one at a time via `add1()` (cheap — it fits one augmented model per c
 against the already-fit linear model, rather than a single enormous 210-parameter model),
 and only those significant at p < 0.05 are added to the final model.
 
-- [ ] **Step 1: Write the continuous-model section of `02_fit_models.R`**
+- [x] **Step 1: Write the continuous-model section of `02_fit_models.R`**
 
 ```r
 # problem-1-vht-model/scripts/02_fit_models.R
@@ -428,7 +428,7 @@ dir.create("models", showWarnings = FALSE)
 saveRDS(fit_continuous, "models/continuous_model.rds")
 ```
 
-- [ ] **Step 2: Run it**
+- [x] **Step 2: Run it**
 
 Run: `cd problem-1-vht-model && Rscript scripts/02_fit_models.R`
 
@@ -436,7 +436,7 @@ Expected: prints the list of significant interaction terms (or `(none)`), then
 `Continuous model: R2 = 0.xxxx, RMSE (log scale) = x.xxxx, N terms`, with R² strictly
 between 0 and 1. Writes `models/continuous_model.rds`.
 
-- [ ] **Step 3: Verify all 20 components are represented**
+- [x] **Step 3: Verify all 20 components are represented**
 
 Run:
 ```
