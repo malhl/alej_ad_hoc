@@ -575,7 +575,7 @@ negative, the model is overfit and Task 5's interaction-term selection should be
 The prediction-interval-contains-confidence-interval assertion passing confirms the
 intervals aren't swapped.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add problem-1-vht-model/scripts/03_validate_models.R
