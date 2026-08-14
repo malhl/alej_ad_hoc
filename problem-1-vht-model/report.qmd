@@ -1,0 +1,107 @@
+---
+title: "Problem 1: VHT Predictive Model for LAW Glass Composition"
+format: html
+---
+
+```{r setup}
+#| include: false
+oxide_cols <- c("Al2O3","B2O3","CaO","Cl","Cr2O3","F","Fe2O3","K2O","Li2O",
+                 "MgO","Na2O","P2O5","SO3","SiO2","SnO2","TiO2","V2O5","ZnO",
+                 "ZrO2","Others")
+fit_continuous <- readRDS("models/continuous_model.rds")
+fit_logistic <- readRDS("models/logistic_model.rds")
+validation <- readRDS("models/continuous_model_validation.rds")
+glass <- read.csv("data/glass_data_clean.csv", stringsAsFactors = FALSE)
+```
+
+## 1–2. Predictive equation
+
+The primary model predicts `ln(VHT alteration rate, g/m²/d)` as a mixture-experiment
+(Scheffé) polynomial over all 20 glass oxide components, with mass fractions summing to 1:
+
+```{r equation}
+#| echo: false
+coefs <- coef(fit_continuous)
+terms <- paste(sprintf("%.4f * %s", coefs, names(coefs)), collapse = " + ")
+cat("ln(ra) =", terms)
+```
+
+## 3. Goodness-of-fit and validation statistics
+
+```{r gof}
+#| echo: false
+r2 <- summary(fit_continuous)$r.squared
+rmse <- sqrt(mean(residuals(fit_continuous)^2))
+cat(sprintf("In-sample: R2 = %.4f, RMSE (log scale) = %.4f\n", r2, rmse))
+cat(sprintf("Leave-one-out CV: R2 = %.4f, RMSE (log scale) = %.4f\n",
+            validation$loo_r2, validation$loo_rmse))
+```
+
+**Overfitting caveat:** in-sample R² (0.78) is substantially higher than the leave-one-out
+R² (0.21). The 20 pairwise interaction terms in the equation above were selected by
+screening all ~190 candidate pairs one at a time via `add1()` and keeping any significant
+at p < 0.05 — with no correction for the resulting multiple comparisons, this greedy
+procedure is expected to admit terms that fit in-sample noise rather than a real
+composition–VHT relationship. The LOO-CV R² of 0.21 is the more honest estimate of how this
+model would perform on a new, unseen glass formulation; the equation above should not be
+treated as a reliable continuous predictor without revisiting the interaction-term selection
+(e.g. a stricter significance threshold, a multiple-testing correction, or LOO-based
+stepwise selection).
+
+## 4. Confidence and prediction intervals
+
+```{r intervals}
+#| echo: false
+head(validation$intervals)
+```
+
+Confidence intervals bound the uncertainty in the mean predicted `ln(ra)` for a given
+composition; prediction intervals (necessarily wider — verified in Task 7) bound where a
+single new glass's measured `ln(ra)` is expected to fall, accounting for residual
+model error as well as parameter uncertainty. Both are computed analytically from the
+fitted linear model's standard errors (R's `predict.lm(..., interval=)`). Given the
+overfitting caveat above, these intervals are narrower than the model's true (LOO)
+predictive uncertainty — they should be read as optimistic lower bounds, not final answers.
+
+## 5. Per-component effects
+
+```{r effects}
+#| echo: false
+summary(fit_continuous)$coefficients
+```
+
+Each oxide's coefficient is its estimated effect on `ln(ra)` per unit increase in that
+component's mass fraction (holding the mixture constraint implicit, per standard Scheffé
+mixture-model interpretation) — a negative coefficient means increasing that oxide's share
+of the glass tends to lower (improve) the alteration rate.
+
+## 6. Comparison to the source material
+
+The source paper (Vienna et al. 2020, Section 9.2) does not report goodness-of-fit
+statistics for a continuous VHT model — it found continuous prediction near the pass/fail
+threshold too uncertain and modeled pass/fail via logistic regression instead. This
+primary model's R²/RMSE above therefore has no direct "beat the source" baseline;
+see `data/paper_benchmarks.md` for the full explanation.
+
+What **is** directly comparable is the secondary pass/fail classifier fit in Task 6:
+
+```{r logistic}
+#| echo: false
+pred_prob <- predict(fit_logistic, type = "response")
+pred_class <- ifelse(pred_prob >= 0.5, 1, 0)
+actual <- ifelse(glass$pass_fail == "F", 1, 0)
+accuracy <- mean(pred_class == actual)
+fpr <- mean(pred_class[actual == 0] == 1)
+fnr <- mean(pred_class[actual == 1] == 0)
+cat(sprintf("This harness's logistic model: accuracy = %.2f%%, FPR = %.2f%%, FNR = %.2f%%\n",
+            accuracy * 100, fpr * 100, fnr * 100))
+cat("Paper's 20-term FLM:              accuracy = 86.30%, FPR = 13.26%, FNR = 15.19%\n")
+cat("Paper's 19-term PQM (recommended): accuracy = 79.74%, FPR = 24.24%, FNR = 6.96%\n")
+```
+
+This harness's logistic model reaches similar overall accuracy to the paper's 19-term PQM
+but at a much higher false-negative rate (80.67% vs. 6.96%) — it is missing most true
+failures despite a low false-positive rate, likely because it uses a naive 0.5 classification
+threshold rather than a tuned one (the paper's PQM uses 0.19, chosen specifically to keep FNR
+low). A threshold sweep against the ROC curve would likely close much of this gap without
+retraining the model.

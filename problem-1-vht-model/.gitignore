@@ -1,2 +1,4 @@
 data/raw/*.pdf
 data/raw/*.txt
+report.html
+report_files/
